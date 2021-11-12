@@ -68,10 +68,10 @@ func (suite *KeeperSuite) SetupTest() {
 	suite.app = app
 	suite.legacyAmino = app.LegacyAmino()
 	suite.ctx = app.BaseApp.NewContext(isCheckTx, tmproto.Header{})
-	suite.keeper = app.NFTKeeper
+	suite.keeper = app.ExamNFTKeeper
 
 	queryHelper := baseapp.NewQueryServerTestHelper(suite.ctx, app.InterfaceRegistry())
-	types.RegisterQueryServer(queryHelper, app.NFTKeeper)
+	types.RegisterQueryServer(queryHelper, app.ExamNFTKeeper)
 	suite.queryClient = types.NewQueryClient(queryHelper)
 
 	err := suite.keeper.IssueDenom(suite.ctx, denomID, denomNm, schema, denomSymbol, address, false, false)
