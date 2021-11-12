@@ -13,9 +13,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/irisnet/irismod/modules/nft/keeper"
-	"github.com/irisnet/irismod/modules/nft/types"
-	"github.com/irisnet/irismod/simapp"
+	"github.com/cosmos/cosmos-sdk/simapp"
+	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/keeper"
+	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/types"
 )
 
 var (
@@ -63,7 +63,7 @@ type KeeperSuite struct {
 
 func (suite *KeeperSuite) SetupTest() {
 
-	app := simapp.Setup(isCheckTx)
+	app := simapp.Setup(suite.T(), isCheckTx)
 
 	suite.app = app
 	suite.legacyAmino = app.LegacyAmino()

@@ -5,9 +5,9 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/irisnet/irismod/modules/nft/exported"
-	keep "github.com/irisnet/irismod/modules/nft/keeper"
-	"github.com/irisnet/irismod/modules/nft/types"
+	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/exported"
+	keep "github.com/cosmos/cosmos-sdk/x/nft/example/nft/keeper"
+	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/types"
 )
 
 func (suite *KeeperSuite) TestNewQuerier() {

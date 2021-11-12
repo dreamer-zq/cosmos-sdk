@@ -8,10 +8,10 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/testutil/rest"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/rest"
 
-	"github.com/irisnet/irismod/modules/nft/types"
+	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/types"
 )
 
 func registerQueryRoutes(cliCtx client.Context, r *mux.Router, queryRoute string) {

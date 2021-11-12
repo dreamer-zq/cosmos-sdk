@@ -7,7 +7,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/irisnet/irismod/modules/nft/types"
+	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/types"
 )
 
 // RegisterInvariants registers all supply invariants

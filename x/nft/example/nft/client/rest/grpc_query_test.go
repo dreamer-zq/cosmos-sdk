@@ -12,13 +12,12 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/testutil/network"
+	"github.com/cosmos/cosmos-sdk/testutil/rest"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/rest"
 
-	nftcli "github.com/irisnet/irismod/modules/nft/client/cli"
-	nfttestutil "github.com/irisnet/irismod/modules/nft/client/testutil"
-	nfttypes "github.com/irisnet/irismod/modules/nft/types"
-	"github.com/irisnet/irismod/simapp"
+	nftcli "github.com/cosmos/cosmos-sdk/x/nft/example/nft/client/cli"
+	nfttestutil "github.com/cosmos/cosmos-sdk/x/nft/example/nft/client/testutil"
+	nfttypes "github.com/cosmos/cosmos-sdk/x/nft/example/nft/types"
 )
 
 type IntegrationTestSuite struct {
@@ -31,13 +30,15 @@ type IntegrationTestSuite struct {
 func (s *IntegrationTestSuite) SetupSuite() {
 	s.T().Log("setting up integration test suite")
 
-	cfg := simapp.NewConfig()
+	cfg := network.DefaultConfig()
 	cfg.NumValidators = 2
 
 	s.cfg = cfg
-	s.network = network.New(s.T(), cfg)
+	var err error
+	s.network, err = network.New(s.T(), s.T().TempDir(), s.cfg)
+	s.Require().NoError(err)
 
-	_, err := s.network.WaitForHeight(1)
+	_, err = s.network.WaitForHeight(1)
 	s.Require().NoError(err)
 }
 

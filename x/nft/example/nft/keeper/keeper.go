@@ -6,20 +6,21 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/irisnet/irismod/modules/nft/types"
+	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/types"
 )
 
 // Keeper maintains the link to data storage and exposes getter/setter methods for the various parts of the state machine
 type Keeper struct {
-	storeKey sdk.StoreKey // Unexposed key to access store from sdk.Context
+	storeKey storetypes.StoreKey // Unexposed key to access store from sdk.Context
 	cdc      codec.Codec
 }
 
 // NewKeeper creates a new instance of the NFT Keeper
-func NewKeeper(cdc codec.Codec, storeKey sdk.StoreKey) Keeper {
+func NewKeeper(cdc codec.Codec, storeKey storetypes.StoreKey) Keeper {
 	return Keeper{
 		storeKey: storeKey,
 		cdc:      cdc,

@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil"
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 
-	nftcli "github.com/irisnet/irismod/modules/nft/client/cli"
+	nftcli "github.com/cosmos/cosmos-sdk/x/nft/example/nft/client/cli"
 )
 
 // MsgRedelegateExec creates a redelegate message.

@@ -19,11 +19,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 
-	"github.com/irisnet/irismod/modules/nft/client/cli"
-	"github.com/irisnet/irismod/modules/nft/client/rest"
-	"github.com/irisnet/irismod/modules/nft/keeper"
-	"github.com/irisnet/irismod/modules/nft/simulation"
-	"github.com/irisnet/irismod/modules/nft/types"
+	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/client/cli"
+	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/client/rest"
+	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/keeper"
+	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/simulation"
+	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/types"
 )
 
 var (

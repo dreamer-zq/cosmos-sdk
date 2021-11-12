@@ -9,8 +9,8 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
-	"github.com/irisnet/irismod/modules/nft/exported"
-	"github.com/irisnet/irismod/modules/nft/types"
+	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/exported"
+	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/types"
 )
 
 // SetCollection saves all NFTs and returns an error if there already exists
