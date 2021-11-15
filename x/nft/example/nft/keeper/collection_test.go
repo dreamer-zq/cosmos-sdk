@@ -1,8 +1,11 @@
 package keeper_test
 
 import (
+	"testing"
+
 	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/keeper"
 	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/types"
+	"github.com/stretchr/testify/suite"
 )
 
 func (suite *KeeperSuite) TestSetCollection() {
@@ -58,6 +61,10 @@ func (suite *KeeperSuite) TestGetCollections() {
 
 	msg, fail := keeper.SupplyInvariant(suite.keeper)(suite.ctx)
 	suite.False(fail, msg)
+}
+
+func TestCollection(t *testing.T) {
+	suite.Run(t, new(KeeperSuite))
 }
 
 func (suite *KeeperSuite) TestGetSupply() {

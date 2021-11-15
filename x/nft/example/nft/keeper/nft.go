@@ -17,7 +17,7 @@ func (k Keeper) GetNFT(ctx sdk.Context, denomID, tokenID string) (nft exported.N
 	}
 	owner := k.nk.GetOwner(ctx, denomID, tokenID)
 	return types.BaseNFT{
-		Id:    token.GetClassId(),
+		Id:    token.GetId(),
 		Name:  "",
 		URI:   token.GetUri(),
 		Data:  "",

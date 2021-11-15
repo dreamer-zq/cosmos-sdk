@@ -40,9 +40,11 @@ var (
 	denomNm3     = "denom3nm"
 	denomSymbol3 = "denomSymbol3"
 
-	address   = CreateTestAddrs(1)[0]
-	address2  = CreateTestAddrs(2)[1]
-	address3  = CreateTestAddrs(3)[2]
+	addresses = CreateTestAddrs(3)
+
+	address   = addresses[0]
+	address2  = addresses[1]
+	address3  = addresses[2]
 	tokenURI  = "https://google.com/token-1.json"
 	tokenURI2 = "https://google.com/token-2.json"
 	tokenData = "{a:a,b:b}"
