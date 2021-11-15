@@ -3,6 +3,7 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	gogotypes "github.com/gogo/protobuf/types"
 
 	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/exported"
 	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/types"
@@ -25,18 +26,22 @@ func (k Keeper) GetNFT(ctx sdk.Context, denomID, tokenID string) (nft exported.N
 }
 
 // GetNFTs returns all NFTs by the specified denom ID
-func (k Keeper) GetNFTs(ctx sdk.Context, denom string) (nfts []exported.NFT) {
-	store := ctx.KVStore(k.storeKey)
-
-	iterator := sdk.KVStorePrefixIterator(store, types.KeyNFT(denom, ""))
-	defer iterator.Close()
-	for ; iterator.Valid(); iterator.Next() {
-		var baseNFT types.BaseNFT
-		k.cdc.MustUnmarshal(iterator.Value(), &baseNFT)
-		nfts = append(nfts, baseNFT)
+func (k Keeper) GetNFTs(ctx sdk.Context, denom string) (nfts []exported.NFT, err error) {
+	tokens := k.nk.GetNFTsOfClass(ctx, denom)
+	for _, token := range tokens {
+		var data = &gogotypes.StringValue{}
+		if err := k.cdc.Unmarshal(token.GetData().Value, data); err != nil {
+			return nil, err
+		}
+		nfts = append(nfts, types.BaseNFT{
+			Id:    token.GetId(),
+			Name:  "",
+			URI:   token.GetUri(),
+			Data:  data.GetValue(),
+			Owner: k.nk.GetOwner(ctx, denom, token.GetClassId()).String(),
+		})
 	}
-
-	return nfts
+	return nfts, nil
 }
 
 // Authorize checks if the sender is the owner of the given NFT

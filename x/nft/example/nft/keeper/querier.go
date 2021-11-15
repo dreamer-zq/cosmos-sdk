@@ -42,13 +42,15 @@ func querySupply(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerier
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
-	var supply uint64
-	if params.Owner.Empty() && len(params.Denom) > 0 {
-		supply = k.GetTotalSupply(ctx, params.Denom)
-	} else {
-		supply = k.nk.GetBalance(ctx, params.Denom, params.Owner)
+	goCtx := sdk.WrapSDKContext(ctx)
+	result, err := k.Supply(goCtx, &types.QuerySupplyRequest{
+		DenomId: params.Denom,
+		Owner:   params.Owner.String(),
+	})
+	if err != nil {
+		return nil, err
 	}
-
+	supply := result.GetAmount()
 	bz := make([]byte, 8)
 	binary.LittleEndian.PutUint64(bz, supply)
 	return bz, nil
@@ -62,8 +64,13 @@ func queryOwner(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerierC
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
-	owner := k.GetOwner(ctx, params.Owner, params.Denom)
-	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, owner)
+	goCtx := sdk.WrapSDKContext(ctx)
+	request := &types.QueryOwnerRequest{
+		DenomId: params.Denom,
+		Owner:   params.Owner.String(),
+	}
+	owner, err := k.Owner(goCtx, request)
+	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, owner.Owner)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
@@ -79,12 +86,15 @@ func queryCollection(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQue
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
-	collection, err := k.GetCollection(ctx, params.Denom)
+	goCtx := sdk.WrapSDKContext(ctx)
+	collection, err := k.Collection(goCtx, &types.QueryCollectionRequest{
+		DenomId: params.Denom,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, collection)
+	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, collection.Collection)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}

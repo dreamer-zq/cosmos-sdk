@@ -455,37 +455,27 @@ func SimulateMsgIssueDenom(k keeper.Keeper, ak types.AccountKeeper, bk types.Ban
 }
 
 func getRandomNFTFromOwner(ctx sdk.Context, k keeper.Keeper, r *rand.Rand) (address sdk.AccAddress, denomID, tokenID string) {
-	owners := k.GetOwners(ctx)
+	denoms := k.GetDenoms(ctx)
 
-	ownersLen := len(owners)
-	if ownersLen == 0 {
+	denomsLen := len(denoms)
+	if denomsLen == 0 {
 		return nil, "", ""
 	}
 
 	// get random owner
-	i := r.Intn(ownersLen)
-	owner := owners[i]
+	i := r.Intn(denomsLen)
+	denom := denoms[i]
+	denomID = denom.Id
 
-	idCollectionsLen := len(owner.IDCollections)
-	if idCollectionsLen == 0 {
+	nfts, err := k.GetNFTs(ctx, denomID)
+	if err != nil {
 		return nil, "", ""
 	}
 
 	// get random collection from owner's balance
-	i = r.Intn(idCollectionsLen)
-	idCollection := owner.IDCollections[i] // nfts IDs
-	denomID = idCollection.DenomId
-
-	idsLen := len(idCollection.TokenIds)
-	if idsLen == 0 {
-		return nil, "", ""
-	}
-
-	// get random nft from collection
-	i = r.Intn(idsLen)
-	tokenID = idCollection.TokenIds[i]
-
-	ownerAddress, _ := sdk.AccAddressFromBech32(owner.Address)
+	i = r.Intn(len(nfts))
+	tokenID = nfts[i].GetID()
+	ownerAddress := nfts[i].GetOwner()
 	return ownerAddress, denomID, tokenID
 }
 

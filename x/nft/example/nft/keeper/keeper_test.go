@@ -83,11 +83,6 @@ func (suite *KeeperSuite) SetupTest() {
 
 	err = suite.keeper.IssueDenom(suite.ctx, denomID3, denomNm3, schema, denomSymbol3, address3, true, true)
 	suite.NoError(err)
-
-	// collections should equal 3
-	collections := suite.keeper.GetCollections(suite.ctx)
-	suite.NotEmpty(collections)
-	suite.Equal(len(collections), 3)
 }
 
 func TestKeeperSuite(t *testing.T) {

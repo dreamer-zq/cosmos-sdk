@@ -14,19 +14,6 @@ import (
 func NewDecodeStore(cdc codec.Codec) func(kvA, kvB kv.Pair) string {
 	return func(kvA, kvB kv.Pair) string {
 		switch {
-		case bytes.Equal(kvA.Key[:1], types.PrefixNFT):
-			var nftA, nftB types.BaseNFT
-			cdc.MustUnmarshal(kvA.Value, &nftA)
-			cdc.MustUnmarshal(kvB.Value, &nftB)
-			return fmt.Sprintf("%v\n%v", nftA, nftB)
-		case bytes.Equal(kvA.Key[:1], types.PrefixOwners):
-			idA := types.MustUnMarshalTokenID(cdc, kvA.Value)
-			idB := types.MustUnMarshalTokenID(cdc, kvB.Value)
-			return fmt.Sprintf("%v\n%v", idA, idB)
-		case bytes.Equal(kvA.Key[:1], types.PrefixCollection):
-			supplyA := types.MustUnMarshalSupply(cdc, kvA.Value)
-			supplyB := types.MustUnMarshalSupply(cdc, kvB.Value)
-			return fmt.Sprintf("%d\n%d", supplyA, supplyB)
 		case bytes.Equal(kvA.Key[:1], types.PrefixDenom):
 			var denomA, denomB types.Denom
 			cdc.MustUnmarshal(kvA.Value, &denomA)

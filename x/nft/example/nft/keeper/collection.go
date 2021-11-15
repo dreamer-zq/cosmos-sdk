@@ -1,15 +1,9 @@
 package keeper
 
 import (
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
-	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/types/query"
 
-	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/exported"
 	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/types"
 )
 
@@ -38,38 +32,23 @@ func (k Keeper) GetCollection(ctx sdk.Context, denomID string) (types.Collection
 		return types.Collection{}, sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s not existed ", denomID)
 	}
 
-	nfts := k.GetNFTs(ctx, denomID)
+	nfts, err := k.GetNFTs(ctx, denomID)
+	if err != nil {
+		return types.Collection{}, err
+	}
 	return types.NewCollection(denom, nfts), nil
 }
 
-// GetPaginateCollection returns the collection by the specified denom ID
-func (k Keeper) GetPaginateCollection(ctx sdk.Context, request *types.QueryCollectionRequest, denomID string) (types.Collection, *query.PageResponse, error) {
-	denom, found := k.GetDenom(ctx, denomID)
-	if !found {
-		return types.Collection{}, nil, sdkerrors.Wrapf(types.ErrInvalidDenom, "denomID %s not existed ", denomID)
-	}
-	var nfts []exported.NFT
-	store := ctx.KVStore(k.storeKey)
-	nftStore := prefix.NewStore(store, types.KeyNFT(denomID, ""))
-	pageRes, err := query.Paginate(nftStore, request.Pagination, func(key []byte, value []byte) error {
-		var baseNFT types.BaseNFT
-		k.cdc.MustUnmarshal(value, &baseNFT)
-		nfts = append(nfts, baseNFT)
-		return nil
-	})
-	if err != nil {
-		return types.Collection{}, nil, status.Errorf(codes.InvalidArgument, "paginate: %v", err)
-	}
-	return types.NewCollection(denom, nfts), pageRes, nil
-}
-
 // GetCollections returns all the collections
-func (k Keeper) GetCollections(ctx sdk.Context) (cs []types.Collection) {
+func (k Keeper) GetCollections(ctx sdk.Context) (cs []types.Collection, err error) {
 	for _, denom := range k.GetDenoms(ctx) {
-		nfts := k.GetNFTs(ctx, denom.Id)
+		nfts, err := k.GetNFTs(ctx, denom.Id)
+		if err != nil {
+			return cs, err
+		}
 		cs = append(cs, types.NewCollection(denom, nfts))
 	}
-	return cs
+	return cs, nil
 }
 
 // GetTotalSupply returns the number of NFTs by the specified denom ID
