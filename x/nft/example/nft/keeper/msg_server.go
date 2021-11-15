@@ -3,12 +3,9 @@ package keeper
 import (
 	"context"
 
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	gogotypes "github.com/gogo/protobuf/types"
 
-	"github.com/cosmos/cosmos-sdk/x/nft"
 	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/types"
 )
 
@@ -33,19 +30,6 @@ func (m msgServer) IssueDenom(goCtx context.Context, msg *types.MsgIssueDenom) (
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	if err := m.Keeper.IssueDenom(ctx, msg.Id, msg.Name, msg.Schema, msg.Symbol, sender, msg.MintRestricted, msg.UpdateRestricted); err != nil {
-		return nil, err
-	}
-
-	err = m.Keeper.nk.SaveClass(ctx, nft.Class{
-		Id:          msg.Id,
-		Name:        msg.Name,
-		Symbol:      msg.Symbol,
-		Description: "",
-		Uri:         "",
-		UriHash:     "",
-		Data:        nil,
-	})
-	if err != nil {
 		return nil, err
 	}
 
@@ -87,18 +71,12 @@ func (m msgServer) MintNFT(goCtx context.Context, msg *types.MsgMintNFT) (*types
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to mint NFT of denom %s", denom.Creator, msg.DenomId)
 	}
 
-	data, err := codectypes.NewAnyWithValue(&gogotypes.StringValue{Value: msg.URI})
-	if err != nil {
-		return nil, err
-	}
-
-	if err := m.Keeper.nk.Mint(ctx, nft.NFT{
-		ClassId: msg.DenomId,
-		Id:      msg.Id,
-		Uri:     msg.URI,
-		UriHash: "",
-		Data:    data,
-	}, recipient); err != nil {
+	if err := m.Keeper.MintNFT(ctx, msg.DenomId, msg.Id,
+		msg.Name,
+		msg.URI,
+		msg.Data,
+		recipient,
+	); err != nil {
 		return nil, err
 	}
 
@@ -135,14 +113,6 @@ func (m msgServer) EditNFT(goCtx context.Context, msg *types.MsgEditNFT) (*types
 	); err != nil {
 		return nil, err
 	}
-
-	m.Keeper.nk.Update(ctx, nft.NFT{
-		ClassId: msg.DenomId,
-		Id:      msg.Id,
-		Uri:     msg.URI,
-		UriHash: "",
-		Data:    &codectypes.Any{},
-	})
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(

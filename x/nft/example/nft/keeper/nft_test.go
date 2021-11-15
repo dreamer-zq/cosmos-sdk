@@ -52,10 +52,10 @@ func (suite *KeeperSuite) TestAuthorize() {
 	err := suite.keeper.MintNFT(suite.ctx, denomID, tokenID, tokenNm, tokenURI, tokenData, address)
 	suite.NoError(err)
 
-	_, err = suite.keeper.Authorize(suite.ctx, denomID, tokenID, address2)
+	err = suite.keeper.Authorize(suite.ctx, denomID, tokenID, address2)
 	suite.Error(err)
 
-	_, err = suite.keeper.Authorize(suite.ctx, denomID, tokenID, address)
+	err = suite.keeper.Authorize(suite.ctx, denomID, tokenID, address)
 	suite.NoError(err)
 }
 

@@ -46,7 +46,7 @@ func querySupply(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerier
 	if params.Owner.Empty() && len(params.Denom) > 0 {
 		supply = k.GetTotalSupply(ctx, params.Denom)
 	} else {
-		supply = k.GetTotalSupplyOfOwner(ctx, params.Denom, params.Owner)
+		supply = k.nk.GetBalance(ctx, params.Denom, params.Owner)
 	}
 
 	bz := make([]byte, 8)

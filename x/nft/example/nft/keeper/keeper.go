@@ -6,9 +6,11 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	gogotypes "github.com/gogo/protobuf/types"
 
 	"github.com/cosmos/cosmos-sdk/x/nft"
 	"github.com/cosmos/cosmos-sdk/x/nft/example/nft/types"
@@ -42,6 +44,17 @@ func (k Keeper) IssueDenom(ctx sdk.Context,
 	creator sdk.AccAddress,
 	mintRestricted, updateRestricted bool,
 ) error {
+	if err := k.nk.SaveClass(ctx, nft.Class{
+		Id:          id,
+		Name:        name,
+		Symbol:      schema,
+		Description: "",
+		Uri:         "",
+		UriHash:     "",
+		Data:        nil,
+	}); err != nil {
+		return err
+	}
 	return k.SetDenom(ctx, types.NewDenom(id, name, schema, symbol, creator, mintRestricted, updateRestricted))
 }
 
@@ -50,24 +63,17 @@ func (k Keeper) MintNFT(
 	ctx sdk.Context, denomID, tokenID, tokenNm,
 	tokenURI, tokenData string, owner sdk.AccAddress,
 ) error {
-	if k.HasNFT(ctx, denomID, tokenID) {
-		return sdkerrors.Wrapf(types.ErrNFTAlreadyExists, "NFT %s already exists in collection %s", tokenID, denomID)
+	data, err := codectypes.NewAnyWithValue(&gogotypes.StringValue{Value: tokenData})
+	if err != nil {
+		return err
 	}
-
-	k.setNFT(
-		ctx, denomID,
-		types.NewBaseNFT(
-			tokenID,
-			tokenNm,
-			owner,
-			tokenURI,
-			tokenData,
-		),
-	)
-	k.setOwner(ctx, denomID, tokenID, owner)
-	k.increaseSupply(ctx, denomID)
-
-	return nil
+	return k.nk.Mint(ctx, nft.NFT{
+		ClassId: denomID,
+		Id:      tokenID,
+		Uri:     tokenURI,
+		UriHash: "",
+		Data:    data,
+	}, owner)
 }
 
 // EditNFT updates an already existing NFT
@@ -86,26 +92,29 @@ func (k Keeper) EditNFT(
 	}
 
 	// just the owner of NFT can edit
-	nft, err := k.Authorize(ctx, denomID, tokenID, owner)
-	if err != nil {
+	if err := k.Authorize(ctx, denomID, tokenID, owner); err != nil {
 		return err
 	}
 
-	if types.Modified(tokenNm) {
-		nft.Name = tokenNm
+	// if types.Modified(tokenNm) {
+	// 	token.Name = tokenNm
+	// } // TODO
+	token, exist := k.nk.GetNFT(ctx, denomID, tokenID)
+	if !exist {
+		return sdkerrors.Wrapf(types.ErrUnknownNFT, "nft ID %s not exists", tokenID)
 	}
-
 	if types.Modified(tokenURI) {
-		nft.URI = tokenURI
+		token.Uri = tokenURI
 	}
 
 	if types.Modified(tokenData) {
-		nft.Data = tokenData
+		metadata, err := codectypes.NewAnyWithValue(&gogotypes.StringValue{Value: tokenData})
+		if err != nil {
+			return err
+		}
+		token.Data = metadata
 	}
-
-	k.setNFT(ctx, denomID, nft)
-
-	return nil
+	return k.nk.Update(ctx, token)
 }
 
 // TransferOwner transfers the ownership of the given NFT to the new owner
@@ -113,53 +122,18 @@ func (k Keeper) TransferOwner(
 	ctx sdk.Context, denomID, tokenID, tokenNm, tokenURI,
 	tokenData string, srcOwner, dstOwner sdk.AccAddress,
 ) error {
-	denom, found := k.GetDenom(ctx, denomID)
-	if !found {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denom ID %s not exists", denomID)
-	}
-
-	nft, err := k.Authorize(ctx, denomID, tokenID, srcOwner)
-	if err != nil {
+	if err := k.Authorize(ctx, denomID, tokenID, srcOwner); err != nil {
 		return err
 	}
-
-	nft.Owner = dstOwner.String()
-
-	if denom.UpdateRestricted && (types.Modified(tokenNm) || types.Modified(tokenURI) || types.Modified(tokenData)) {
-		return sdkerrors.Wrapf(sdkerrors.ErrUnauthorized, "It is restricted to update NFT under this denom %s", denom.Id)
-	}
-
-	if types.Modified(tokenNm) {
-		nft.Name = tokenNm
-	}
-	if types.Modified(tokenURI) {
-		nft.URI = tokenURI
-	}
-	if types.Modified(tokenData) {
-		nft.Data = tokenData
-	}
-
-	k.setNFT(ctx, denomID, nft)
-	k.swapOwner(ctx, denomID, tokenID, srcOwner, dstOwner)
-	return nil
+	return k.nk.Transfer(ctx, denomID, tokenID, dstOwner)
 }
 
 // BurnNFT deletes a specified NFT
 func (k Keeper) BurnNFT(ctx sdk.Context, denomID, tokenID string, owner sdk.AccAddress) error {
-	if !k.HasDenomID(ctx, denomID) {
-		return sdkerrors.Wrapf(types.ErrInvalidDenom, "denom ID %s not exists", denomID)
-	}
-
-	nft, err := k.Authorize(ctx, denomID, tokenID, owner)
-	if err != nil {
+	if err := k.Authorize(ctx, denomID, tokenID, owner); err != nil {
 		return err
 	}
-
-	k.deleteNFT(ctx, denomID, nft)
-	k.deleteOwner(ctx, denomID, tokenID, owner)
-	k.decreaseSupply(ctx, denomID)
-
-	return nil
+	return k.nk.Burn(ctx, denomID, tokenID)
 }
 
 // TransferDenomOwner transfers the ownership of the given denom to the new owner
