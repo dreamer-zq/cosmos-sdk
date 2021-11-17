@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -124,6 +125,25 @@ func (k Keeper) TransferOwner(
 ) error {
 	if err := k.Authorize(ctx, denomID, tokenID, srcOwner); err != nil {
 		return err
+	}
+	token, exist := k.nk.GetNFT(ctx, denomID, tokenID)
+	if !exist {
+		return sdkerrors.Wrapf(types.ErrInvalidTokenID, "nft ID %s not exists", tokenID)
+	}
+
+	data, err := codectypes.NewAnyWithValue(&gogotypes.StringValue{Value: tokenData})
+	if err != nil {
+		return err
+	}
+	if !reflect.DeepEqual(token, nft.NFT{
+		ClassId: denomID,
+		Id:      tokenID,
+		Uri:     tokenURI,
+		Data:    data,
+	}) {
+		if err := k.EditNFT(ctx, denomID, tokenID, tokenNm, tokenURI, tokenData, srcOwner); err != nil {
+			return err
+		}
 	}
 	return k.nk.Transfer(ctx, denomID, tokenID, dstOwner)
 }

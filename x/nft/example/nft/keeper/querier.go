@@ -70,6 +70,10 @@ func queryOwner(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerierC
 		Owner:   params.Owner.String(),
 	}
 	owner, err := k.Owner(goCtx, request)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
+	}
+
 	bz, err := codec.MarshalJSONIndent(legacyQuerierCdc, owner.Owner)
 	if err != nil {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
